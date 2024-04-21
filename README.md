@@ -27,7 +27,7 @@ except for the inclusion of mqSystem and the payload javascript, like this:
 
 ### Example applications:
 
-- eegstudio.maplequestlabs.com
+- [eegstudio.maplequestlabs.com](https://eegstudio.maplequestlabs.com)
 
 ### License
 
