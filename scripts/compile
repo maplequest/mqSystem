@@ -1,0 +1,8 @@
+
+if [ "X$1" == "X" ]; then
+  echo "usage: compile <js file>"
+  exit 1
+fi
+
+java -jar "$HOME/closure.jar" --compilation_level=SIMPLE_OPTIMIZATIONS --js $1 --js_output_file `echo "$1" | sed 's/js$/min\.js/'`
+

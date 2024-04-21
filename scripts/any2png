@@ -1,0 +1,31 @@
+
+src=$1
+size=$2
+
+if [ "X$src" == "X" ] || [ ! -f $src ]; then
+  echo "usage: any2png <artwork file> <size>"
+  exit 1
+fi
+
+if [ "X$size" == "X" ]; then
+  echo "usage: any2png <artwork file> <size>"
+  exit 1
+fi
+
+ext=`echo "$src" | rev | cut -f 1 -d "." | rev`
+
+tgt=`echo "$src" | sed "s/\.${ext}$/-${size}x${size}.png/"`
+
+cp $src "tmp1."$ext
+
+if [ "X$ext" != "Xsvg" ]; then
+any2svg=`echo $0 | sed 's/png$/svg/'`
+$any2svg "tmp1."$ext
+rm "tmp1."$ext
+fi
+
+# note: this is an old version of inkscape
+inkscape --export-background-opacity=0 --export-width="$size" --export-png="$tgt" tmp1.svg > /dev/null
+#inkscape --export-background-opacity=0 --export-width="$size" --export-filename="$tgt" tmp1.svg
+rm tmp1.svg
+

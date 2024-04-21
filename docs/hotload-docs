@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+import subprocess
+
+class MyHandler(SimpleHTTPRequestHandler):
+
+	def __init__(self,req,client_addr,server):
+		SimpleHTTPRequestHandler.__init__(self,req,client_addr,server)
+
+	def do_GET(self):
+		if self.path == '/':
+			subprocess.run(["bash", "-c", "(cd ..;./scripts/build-docs)"])
+		SimpleHTTPRequestHandler.do_GET(self)
+
+handler = MyHandler
+server = HTTPServer(('127.0.0.1', 8001), handler)
+subprocess.run(["cmd.exe","/c","start","http://127.0.0.1:8001"])
+server.serve_forever()

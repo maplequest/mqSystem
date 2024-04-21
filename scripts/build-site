@@ -1,0 +1,179 @@
+# pwa script 
+
+here=`pwd`
+name=`basename $here`
+
+tgt="$HOME/.mqPWA"
+mkdir -p $tgt
+if [ ! -d $tgt ]; then
+  echo "RTFC"
+  exit 1
+fi
+
+sys="../mqSystem"
+if [ ! -d $sys ]; then
+  echo "RTFC"
+  exit 1
+fi
+
+#bump version
+version=`cat VERSION`
+minor=`echo $version | cut -f 3 -d "."`
+minor=`expr $minor + 1`
+echo `echo $version | cut -f 1-2 -d "."`".$minor" > VERSION
+version=`cat VERSION`
+
+title=`cat TITLE`
+
+# handle icon
+icon=""
+if [ -f "icon.svg" ]; then
+  icon="icon.svg"
+fi
+if [ -f "icon.obj" ]; then
+  icon="icon.obj"
+fi
+if [ "X$icon" == "X" ]; then
+  echo "X$icon"
+  echo "Icon missing."
+  exit 1
+fi
+if [ ! -f "icon-16x16.png" ]; then
+  $sys/scripts/any2png $icon 16
+fi
+if [ ! -f "icon-180x180.png" ]; then
+  $sys/scripts/any2png $icon 180
+fi
+if [ ! -f "icon-512x512.png" ]; then
+  $sys/scripts/any2png $icon 512
+fi
+
+# transfer system and application files
+cp $sys/dist/mqSystem.min.js $tgt
+cp icon-*x*.png $tgt
+files=`find . '!' -name '*.js' '!' -name 'TITLE' '!' -name 'VERSION' '!' -name "icon.*" -print`
+for file in $files; do
+  if [ -f $file ]; then
+    dir=`dirname $file`
+    mkdir -p "$tgt/$dir"
+    cp "$file" "$tgt/$file"
+  fi
+done
+
+
+# build payload
+rm tmp.js 2> /dev/null
+jsfiles=`find . -name "*.js" '!' -name "*.min.js" -print`
+minjsfiles=`find . -name "*.min.js" -print`
+echo > tmp.js
+for jsfile in $jsfiles; do
+  cat $jsfile >> tmp.js
+done
+$sys/scripts/compile tmp.js
+if [ -f tmp.min.js ]; then
+  for minjsfile in $minjsfiles; do
+    cat $minjsfile >> tmp.min.js
+  done
+  mv tmp.min.js $tgt/mqPayload.min.js
+  rm tmp.js
+else
+  echo "Payload compilation failed."
+  exit 1
+fi
+
+# build index
+cat > $tgt/index.html  << _EOF
+<html lang="en">
+<head>
+<title>$title</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" type="image/png" href="/icon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180x180.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#ffffff">
+<meta name="google" content="notranslate">
+</head>
+<body>
+<script> var mqVersion="$version", mqTitle="$title"; </script>
+<script src="mqSystem.min.js"></script>
+<script src="mqPayload.min.js"></script>
+</body>
+</html>
+_EOF
+
+cachelist=""
+cat > $tgt/service-worker.js  << _EOF
+const CACHE_NAME = "${name}-cache-v${version}";
+const urlsToCache = [ "/",$cachelist ];
+self.addEventListener("install", async (event) => {
+  self.skipWaiting();
+  event.waitUntil(cache_assets());
+});
+async function cache_assets() {
+  const cache = await self.caches.open(CACHE_NAME);
+  return cache.addAll(urlsToCache);
+}
+self.addEventListener("activate", async (event) => {
+  event.waitUntil(delete_old_caches());
+});
+async function delete_old_caches() {
+  const keys = await caches.keys();
+  const deletePromises = keys
+    .filter((key) => key !== CACHE_NAME)
+    .map((key) => self.caches.delete(key));
+  return Promise.all(deletePromises);
+}
+self.addEventListener("fetch", (event) => {
+  event.respondWith(get_response(event.request));
+});
+async function get_response(request) {
+  const cache = await self.caches.open(CACHE_NAME);
+  const cached_response = await cache.match(request);
+  const pending_response = fetch(request).then((response) => {
+    cache.put(request, response.clone());
+    return response;
+  });
+  return cached_response || pending_response;
+}
+_EOF
+
+cat > $tgt/manifest.json << _EOF
+{
+  "short_name": "$title",
+  "name": "$title",
+  "icons": [
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "background_color": "#000000",
+  "display": "standalone"
+}
+_EOF
+
+cat > $tgt/hotload << _EOF
+#!/usr/bin/env python3
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+import subprocess
+
+class MyHandler(SimpleHTTPRequestHandler):
+
+	def __init__(self,req,client_addr,server):
+		SimpleHTTPRequestHandler.__init__(self,req,client_addr,server)
+
+	def do_GET(self):
+		if self.path == '/':
+			subprocess.run(["bash", "-c", "(cd ${here};${sys}/scripts/build-site)"])
+		SimpleHTTPRequestHandler.do_GET(self)
+
+handler = MyHandler
+server = HTTPServer(('127.0.0.1', 8000), handler)
+subprocess.run(["cmd.exe","/c","start","http://127.0.0.1:8000"])
+server.serve_forever()
+_EOF
+

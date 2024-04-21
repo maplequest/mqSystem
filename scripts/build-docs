@@ -1,0 +1,19 @@
+# rebuild documentation
+
+version=`cat VERSION`
+
+doc=`which documentation`
+if [ "X$doc" != "X" ]; then 
+  cmd=`which cmd.exe`
+  if [ "X$cmd" != "X" ]; then
+    # run documentation.js from node in windows
+    cmd.exe /c documentation build src/*/* -f html -o docs --project-name="MapleQuestAPI" --project-version="$version" 
+  else 
+    # run documentation.js 
+    documentation build src/*/* -f html -o docs --project-name="MapleQuest API" --project-version="Version $version"
+  fi
+fi
+
+# apply custom stuff
+cat docs/mqBootDoc.js >> docs/assets/site.js
+

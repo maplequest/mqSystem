@@ -1,0 +1,37 @@
+
+src=$1
+
+if [ "X$src" == "X" ] || [ ! -f $src ]; then
+  echo "usage: any2dxf <artwork file>"
+  exit 1
+fi
+
+ext=`echo "$src" | rev | cut -f 1 -d "." | rev`
+
+tgt=`echo "$src" | sed "s/${ext}$/dxf/"`
+
+eps=tmp.eps
+
+case $ext in
+  obj)
+   tgif -print -stdout -eps -color $src > $eps
+   ;;
+  png)
+   pngtopnm $src 2> /dev/null | pnmcrop | potrace > $eps
+   ;;
+  jpg)
+   jpegtopnm $src 2> /dev/null | pnmcrop | potrace > $eps
+   ;;
+  svg)
+   inkscape -E $eps $src
+   ;;
+  *)
+   echo "Don't know how to handle $ext files"
+   exit 1
+esac
+
+#pstoedit -dt -f "dxf: -polyaslines -mm" $eps $tgt 2> /dev/null
+pstoedit -dt -f "dxf: -mm" $eps $tgt 2> /dev/null
+
+rm $eps 2> /dev/null
+

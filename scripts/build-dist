@@ -1,0 +1,29 @@
+
+fnt="dist/fonts.js"
+rm $fnt 2> /dev/null
+fonts=`ls -1 fonts/*.ttf`
+cat > $fnt << _EOF
+mqCSS('mq-font-style',\`
+_EOF
+for font in $fonts; do
+  data=`base64 -w 0 $font`
+  family=`basename $font | cut -f 1 -d "."`
+  cat >> $fnt << _EOF
+@font-face {
+  font-family: '${family}';
+  src: url(data:font/truetype;charset=utf-8;base64,${data});
+}
+_EOF
+done
+cat >> $fnt << _EOF
+\`);
+_EOF
+
+cat src/*/*.js > dist/mqSystem.js
+cat $fnt >> dist/mqSystem.js
+./scripts/compile  dist/mqSystem.js
+
+rm dist/mqSystem.js
+rm $fnt
+cat externs/*.js >> dist/mqSystem.min.js
+

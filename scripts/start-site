@@ -1,0 +1,17 @@
+# purge the sandbox and build the site
+# use this once when switching build to clear stale content
+
+sys="../mqSystem"
+if [ ! -d $sys ]; then
+  echo "RTFC"
+  exit 1
+fi
+
+tgt="$HOME/.mqPWA"
+if [ -d $tgt ]; then
+  rm -r "$tgt"
+fi
+mkdir -p $tgt
+
+$sys/scripts/build-site
+
