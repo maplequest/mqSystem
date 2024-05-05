@@ -9,7 +9,7 @@ fi
 
 tgt="$HOME/.mqPWA"
 if [ -d $tgt ]; then
-  rm -r "$tgt"
+  rm -rf "$tgt"
 fi
 mkdir -p $tgt
 

@@ -51,7 +51,7 @@ fi
 # transfer system and application files
 cp $sys/dist/mqSystem.min.js $tgt
 cp icon-*x*.png $tgt
-files=`find . '!' -name '*.js' '!' -name 'TITLE' '!' -name 'VERSION' '!' -name "icon.*" -print`
+files=`find . '!' -name '.git*' '!' -wholename '*/.git/*' '!' -name '*.js' '!' -name 'TITLE' '!' -name 'VERSION' '!' -name "icon.*" -print`
 for file in $files; do
   if [ -f $file ]; then
     dir=`dirname $file`
