@@ -17,7 +17,7 @@ var mqEventLut = [
   "onloadeddata", "onloadedmetadata", "onloadstart", "onpause", "onplay",
   "onplaying", "onprogress", "onratechange", "onseeked", "onseeking",
   "onstalled", "onsuspend", "ontimeupdate", "onvolumechange", "onwaiting",
-  "ontoggle"
+  "ontoggle", "onpointermove", "onpointerup", "onpointerdown"
 ];
 
 var mqAttrLut = {

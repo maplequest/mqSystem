@@ -33,7 +33,8 @@ function mqWindow(wcfg) {
   if (wcfg.y==null)  wcfg.y=(0.5*mqHeight()-0.5*parseFloat(h))+'px';
   var y= wcfg.y;
   if (mqWindow.initDone==null) {
-    mqEvent('mq-root','mousemove',mqWindowDrag,true);
+    //mqEvent('mq-root','mousemove',mqWindowDrag,true);
+    mqEvent('mq-root','pointermove',mqWindowDrag,true);
     mqWindow.initDone=true;
   }
   mqDelete(id+'-window');
@@ -45,8 +46,10 @@ function mqWindow(wcfg) {
     'background': mqPal(0.05).hex(),
     'border-bottom': '1px solid ' + mqPal(1.0).hex(),
     'user-select': "none",
-    'onmousedown': function (e) { this.parentElement.parentElement.drag=[e.clientX,e.clientY]; },
-    'onmouseup': function (e) { this.parentElement.parentElement.drag=null; }
+    //'onmousedown': function (e) { this.parentElement.parentElement.drag=[e.clientX,e.clientY]; },
+    'onpointerdown': function (e) { this.parentElement.parentElement.drag=[e.clientX,e.clientY]; },
+    //'onmouseup': function (e) { this.parentElement.parentElement.drag=null; }
+    'onpointerup': function (e) { this.parentElement.parentElement.drag=null; }
   });
   var closebox = mqMakeWidget( {
     tag: 'div',

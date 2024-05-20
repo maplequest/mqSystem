@@ -22,7 +22,7 @@ function mqLabel(cfg) {
     height: mqShrinkHeight(cfg.height),
     border: '1px solid transparent',
     'user-select': 'none',
-    'touch-action': 'none',
+   // 'touch-action': 'none',
   },{
     tag: 'div',
     id: id,
@@ -84,7 +84,7 @@ function mqButton(cfg) {
     background: mqPal(0.05).hex(),
     cursor: 'pointer',
     'user-select': 'none',
-    'touch-action': 'none',
+    //'touch-action': 'none',
     'onclick': cfg.onclick||function(x) { console.log('button click') },
   },{
     tag: 'div',
@@ -113,7 +113,7 @@ function mqCheckBox(cfg) {
     background: mqPal((checked?1.0:0.05)).hex(),
     cursor: 'pointer',
     'user-select': 'none',
-    'touch-action': 'none',
+  //  'touch-action': 'none',
     'onclick': function(e) { 
       this.checked=!this.checked;
       mqSet(this,'background', mqPal((this.checked?1.0:0.05)).hex());
@@ -160,7 +160,7 @@ function mqRadioBox(cfg) {
     background: mqPal((checked?1.0:0.05)).hex(),
     cursor: 'pointer',
     'user-select': 'none',
-    'touch-action': 'none',
+   // 'touch-action': 'none',
     'border-radius': radius+'px',
     'onclick': function(e) {
       var objs = mqElementsOfClass(group);
@@ -208,7 +208,7 @@ function mqNumeric(cfg) {
     width: mqShrinkWidth(cfg.width),
     height: mqShrinkHeight(cfg.height),
     'user-select': 'none',
-    'touch-action': 'none',
+   // 'touch-action': 'none',
     background: mqPal(0.05).hex(),
   },{
     tag: 'div',
@@ -246,7 +246,7 @@ function mqCanvas(cfg) {
    width: mqShrinkWidth(cfg.width),
    height: mqShrinkHeight(cfg.height),
    'user-select': 'none',
-   'touch-action': 'none',
+  // 'touch-action': 'none',
     background: cfg.background||mqPal(0.05).hex(),
   });
   var o1 = mqMakeWidget({
@@ -339,7 +339,7 @@ function mqFrame(cfg) {
     width: mqShrinkWidth(cfg.width),
     height: mqShrinkHeight(cfg.height),
     'user-select': 'none',
-    'touch-action': 'none',
+   // 'touch-action': 'none',
   });
   if (cfg.x!=null||cfg.y!=null)
     mqSet(obj,'position','absolute','top',cfg.y||'0px','left',cfg.x||'0px');
@@ -370,7 +370,7 @@ function mqSlider(cfg) {
     height: mqShrinkHeight(cfg.height||'16px'),
     cursor: 'pointer',
     'user-select': 'none',
-    'touch-action': 'none',
+   // 'touch-action': 'none',
     'onclick': function (e) { 
        var rect = e.target.getBoundingClientRect();
        var x = e.clientX - rect.left;
@@ -429,7 +429,7 @@ function mqList(cfg) {
     width: mqShrinkWidth(cfg.width),
     height: mqShrinkHeight(cfg.height),
     'user-select': 'none',
-    'touch-action': 'none',
+  //  'touch-action': 'none',
     cursor: 'pointer',
   });
   var cb = cfg.onclick||function(e) { console.log('you clicked '+e); };
