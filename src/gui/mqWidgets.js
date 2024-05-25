@@ -416,6 +416,34 @@ function mqSlider(cfg) {
   return obj;
 }
 
+function mqListSetEntries(id,entries,cb,selected) {
+  var obj = mqElement(id+'-wrapper');
+  if (!obj) return;
+  var width = mqWidth(obj);
+  obj.innerHTML="";
+  for (var i=0;i<entries.length;i++) {
+    var entry = entries[i];
+    var obj2 = mqLabel({
+      id: id+'-entry-'+i,
+      label: entry,
+      width: (width-7)+'px'
+    });
+    mqSet(obj2,
+      'background', (mqOdd(i)?mqPal(0.05).hex():'none'),
+      'class', id+'-entries',
+      'border', '1px solid '+(selected==entry?mqPal(0.5).hex():'transparent'),
+      'onclick', function (e) {
+         var objs = this.parentElement.childNodes;
+         for (var i=0;i<objs.length;i++) mqSet(objs[i],'border','1px solid transparent');
+         mqSet(this,'border','1px solid '+mqPal(0.5).hex());
+         cb(this.firstChild.innerText);
+      }
+    );
+    mqSet(obj2.firstChild,'padding-left','5px');
+    mqAppend(obj,obj2);
+  }
+}
+
 function mqList(cfg) {
   var cnt = mqList.cnt||0;
   mqList.cnt = cnt+1;
