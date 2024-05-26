@@ -17,7 +17,7 @@ var mqEventLut = [
   "onloadeddata", "onloadedmetadata", "onloadstart", "onpause", "onplay",
   "onplaying", "onprogress", "onratechange", "onseeked", "onseeking",
   "onstalled", "onsuspend", "ontimeupdate", "onvolumechange", "onwaiting",
-  "ontoggle", "onpointermove", "onpointerup", "onpointerdown"
+  "ontoggle", "onpointermove", "onpointerup", "onpointerdown", "oncontextrestored"
 ];
 
 var mqAttrLut = {
@@ -252,6 +252,7 @@ function mqApplyConfig(obj,cfg) {
 * mqAttr('myElement','my-attribute');
 */
 function mqAttr(obj,key,val) {
+  if (obj==null) return;
   if (val==null) {
     return mqElement(obj).getAttribute(key);
   } else {

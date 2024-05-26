@@ -226,6 +226,7 @@ function mqNumeric(cfg) {
 function mqCanvas(cfg) {
   function mqCanvasResizer(idstr) {
     return function () {
+      if (!mqElement(idstr)) return;
       // allow flex box to work
       mqAttr(idstr,'width','1');
       mqAttr(idstr,'height','1');
