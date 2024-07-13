@@ -3,11 +3,9 @@
 here=`pwd`
 name=`basename $here`
 
-tgt="$HOME/.mqPWA"
-mkdir -p $tgt
-if [ ! -d $tgt ]; then
-  echo "RTFC"
-  exit 1
+notouch=""
+if [ -f ./CONFIG ]; then
+. ./CONFIG
 fi
 
 sys="../mqSystem"
@@ -22,6 +20,21 @@ minor=`echo $version | cut -f 3 -d "."`
 minor=`expr $minor + 1`
 echo `echo $version | cut -f 1-2 -d "."`".$minor" > VERSION
 version=`cat VERSION`
+
+root="$HOME/.mqPWA"
+mkdir -p $root
+if [ ! -d $root ]; then
+  echo "RTFC"
+  exit 1
+fi
+
+
+tgt="$HOME/.mqPWA/$version"
+mkdir -p $tgt
+if [ ! -d $tgt ]; then
+  echo "RTFC"
+  exit 1
+fi
 
 title=`cat TITLE`
 
@@ -51,7 +64,11 @@ fi
 # transfer system and application files
 cp $sys/dist/mqSystem.min.js $tgt
 cp icon-*x*.png $tgt
-files=`find . '!' -name '.git*' '!' -wholename '*/.git/*' '!' -name '*.js' '!' -name 'TITLE' '!' -name 'VERSION' '!' -name "icon.*" -print`
+files=`find . '!' -wholename "*/internal/*" '!' -name '.git*' '!' -wholename '*/.git/*' '!' -name '*.js' '!' -name 'TITLE' '!' -name 'VERSION' '!' -name 'CONFIG' '!' -name "icon.*" -print`
+for extra in $notouch; do
+#  echo "ADDING $extra"
+  files="$files $extra"
+done
 for file in $files; do
   if [ -f $file ]; then
     dir=`dirname $file`
@@ -60,10 +77,23 @@ for file in $files; do
   fi
 done
 
+stringContains() { case $2 in *$1* ) echo "1";; *) echo "0";; esac ; }
 
 # build payload
 rm tmp.js 2> /dev/null
-jsfiles=`find . -name "*.js" '!' -name "*.min.js" -print`
+alljsfiles=`find . -name "*.js" '!' -name "*.min.js" -print`
+jsfiles=""
+for jsfile in $alljsfiles; do
+  matchfile=`basename $jsfile`
+  match=`stringContains "$matchfile" "$notouch"`
+#  echo "$jsfile $matchfile $match"
+  if [ "$match" == "0" ]; then
+    jsfiles="$jsfiles $jsfile"
+#  else 
+#    echo "REMOVING $jsfile"
+  fi
+done
+
 minjsfiles=`find . -name "*.min.js" -print`
 echo > tmp.js
 for jsfile in $jsfiles; do
@@ -82,30 +112,85 @@ else
 fi
 
 # build index
-cat > $tgt/index.html  << _EOF
+cat > $root/index.html  << _EOF
 <html lang="en">
 <head>
 <title>$title</title>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="icon" type="image/png" href="/icon-16x16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/icon-180x180.png">
-<link rel="manifest" href="/manifest.json">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta content='yes' name='apple-mobile-web-app-capable'/>
+<meta content='yes' name='mobile-web-app-capable'/>
+<link rel="icon" type="image/png" href="/$version/icon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/$version/icon-180x180.png">
+<link rel="manifest" href="/$version/manifest.json">
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 </head>
 <body>
 <script> var mqVersion="$version", mqTitle="$title"; </script>
-<script src="mqSystem.min.js"></script>
-<script src="mqPayload.min.js"></script>
+<script src="/$version/mqSystem.min.js"></script>
+<script src="/$version/mqPayload.min.js"></script>
 </body>
 </html>
 _EOF
 
-cachelist=""
-cat > $tgt/service-worker.js  << _EOF
+cat > $tgt/manifest.json << _EOF
+{
+  "short_name": "$title",
+  "name": "$title",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/$version/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "background_color": "#000000",
+  "display": "standalone"
+}
+_EOF
+
+cat > $root/hotload << _EOF
+#!/usr/bin/env python3
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+import subprocess
+
+class MyHandler(SimpleHTTPRequestHandler):
+
+	def __init__(self,req,client_addr,server):
+		SimpleHTTPRequestHandler.__init__(self,req,client_addr,server)
+
+	def do_GET(self):
+		if self.path == '/':
+			subprocess.run(["bash", "-c", "(cd ${here};${sys}/scripts/build-site)"])
+		SimpleHTTPRequestHandler.do_GET(self)
+
+handler = MyHandler
+server = HTTPServer(('127.0.0.1', 8000), handler)
+subprocess.run(["cmd.exe","/c","start","http://127.0.0.1:8000"])
+server.serve_forever()
+_EOF
+chmod a+x $root/hotload
+
+here=`pwd`
+cd $root
+cachelist="\"/\", \"/index.html\", \"/service-worker.js\""
+cachefiles=`find . -wholename "*/$version/*" -print`
+cd "$here"
+for cfile in $cachefiles; do
+  if [ -d $root/$cfile ]; then
+    cfile="$cfile/"
+  fi
+  cfile=`echo "$cfile" | cut -c 2-`
+  cachelist="${cachelist}, \"${cfile}\""
+done
+
+cat > $root/service-worker.js  << _EOF
 const CACHE_NAME = "${name}-cache-v${version}";
-const urlsToCache = [ "/",$cachelist ];
+const urlsToCache = [ $cachelist ];
 self.addEventListener("install", async (event) => {
   self.skipWaiting();
   event.waitUntil(cache_assets());
@@ -136,44 +221,5 @@ async function get_response(request) {
   });
   return cached_response || pending_response;
 }
-_EOF
-
-cat > $tgt/manifest.json << _EOF
-{
-  "short_name": "$title",
-  "name": "$title",
-  "icons": [
-    {
-      "src": "/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "start_url": "/",
-  "theme_color": "#ffffff",
-  "background_color": "#000000",
-  "display": "standalone"
-}
-_EOF
-
-cat > $tgt/hotload << _EOF
-#!/usr/bin/env python3
-from http.server import SimpleHTTPRequestHandler, HTTPServer
-import subprocess
-
-class MyHandler(SimpleHTTPRequestHandler):
-
-	def __init__(self,req,client_addr,server):
-		SimpleHTTPRequestHandler.__init__(self,req,client_addr,server)
-
-	def do_GET(self):
-		if self.path == '/':
-			subprocess.run(["bash", "-c", "(cd ${here};${sys}/scripts/build-site)"])
-		SimpleHTTPRequestHandler.do_GET(self)
-
-handler = MyHandler
-server = HTTPServer(('127.0.0.1', 8000), handler)
-subprocess.run(["cmd.exe","/c","start","http://127.0.0.1:8000"])
-server.serve_forever()
 _EOF
 

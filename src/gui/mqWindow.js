@@ -46,10 +46,10 @@ function mqWindow(wcfg) {
     'background': mqPal(0.05).hex(),
     'border-bottom': '1px solid ' + mqPal(1.0).hex(),
     'user-select': "none",
-    //'onmousedown': function (e) { this.parentElement.parentElement.drag=[e.clientX,e.clientY]; },
-    'onpointerdown': function (e) { this.parentElement.parentElement.drag=[e.clientX,e.clientY]; },
-    //'onmouseup': function (e) { this.parentElement.parentElement.drag=null; }
-    'onpointerup': function (e) { this.parentElement.parentElement.drag=null; }
+    'onmousedown': function (e) { this.parentElement.parentElement.drag=[e.clientX,e.clientY]; },
+//    'onpointerdown': function (e) { this.parentElement.parentElement.drag=[e.clientX,e.clientY]; },
+    'onmouseup': function (e) { this.parentElement.parentElement.drag=null; }
+//    'onpointerup': function (e) { this.parentElement.parentElement.drag=null; }
   });
   var closebox = mqMakeWidget( {
     tag: 'div',
@@ -90,40 +90,8 @@ function mqWindow(wcfg) {
     children: (wcfg.borderless?[bdy]:[bar,bdy])
   });
   mqAppend('mq-root',obj);
+  mqStyle(obj,'filter','drop-shadow(0px 0px 4px '+mqPal(0.5).hex()+')');
   return bdy;
 }
 
-/*
-function mqDialogOK(cfg) {
-  var idx=mqDialogOK.count||0;
-  var id = 'mq-dialog-ok-' + idx;
-  var wnd = mqWindow({
-    id: id,
-    title: cfg.title||'Dialog',
-    width: cfg.width||'300px',
-    height: cfg.height||'150px',
-  });
-  mqSet(wnd,'text-align','center');
-  var obj = mqMakeWidget({
-      tag: 'div',
-      id: id+'-inner',
-      padding: '5px',
-      innerHTML: cfg.message||"",
-      'padding-bottom': '15px',
-    });
-  mqAppend(wnd,obj);
-  obj = mqMakeWidget({
-      tag: 'button',
-      id: id+'-button',
-      width: '120px',
-      cursor: 'pointer',
-      border: '1px solid '+mqPal(0.5).hex(),
-      innerHTML: cfg['button-label']||'OK'
-    });
-  mqAppend(wnd,obj);
-  mqEvent(obj,'click',function () { mqDelete(id+'-window') });
-  mqDialogOK.count=idx+1;
-}
-
-*/
 

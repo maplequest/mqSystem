@@ -53,6 +53,10 @@ function mqResizeRoot() {
   mqSet('mq-splash-root','width', Math.round(0.5*w)+'px');
   mqSet('mq-modal-root','width', Math.round(0.5*w)+'px');
   mqSet('mq-top','font-size', mqCfg["font-size"]||'16px');
+  setTimeout(function () {
+    mqSet('mq-top','width','100%');
+    mqSet('mq-top','height','100%');
+  },200);
 }
 
 /** Initialize mqWebApp
@@ -174,8 +178,13 @@ body {
   mqPosition(sRoot);
   mqAppend(splash,sRoot);
 
-  mqSet(top,'height','100vh');
-  mqSet(top,'width','100vw');
+  var h = window.innerHeight;
+  var w = window.innerWidth;
+  mqSet(top,'height',h+'px');
+  mqSet(top,'width',w+'px');
+
+//  mqSet(top,'height','100vh');
+//  mqSet(top,'width','100vw');
   document.body.appendChild(top);
 
   mqEvent(document,'keyup', function (e) {

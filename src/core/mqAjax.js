@@ -1,12 +1,12 @@
 
-function mqAjaxASCII (url,handler,nocache,gzipped) {
+function mqAjaxASCII (url,handler,bustcache,gzipped) {
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
       handler(xhr.responseText);
     }
   };
-  if (nocache) 
+  if (bustcache) 
     xhr.open('GET', url + '?' + performance.now());
   else
     xhr.open('GET', url);
@@ -14,7 +14,7 @@ function mqAjaxASCII (url,handler,nocache,gzipped) {
   xhr.send();
 }
 
-function mqAjaxBinary (url,handler,nocache,gzipped) {
+function mqAjaxBinary (url,handler,bustcache,gzipped) {
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
@@ -22,7 +22,7 @@ function mqAjaxBinary (url,handler,nocache,gzipped) {
     }
   };
   xhr.responseType="arraybuffer";
-  if (nocache) 
+  if (bustcache) 
     xhr.open('GET', url + '?' + performance.now());
   else
     xhr.open('GET', url);
@@ -38,7 +38,7 @@ function mqAjaxJSDir(dirname,whendone) {
       mqAjaxASCII('/' + dirname + '/' + fname, function (data) {
         try { eval(data); } catch (e) { console.log(e.message); }
         loadRecursively();
-      },true);
+      },false);
     } else {
       if (whendone) whendone();
     }
@@ -46,6 +46,6 @@ function mqAjaxJSDir(dirname,whendone) {
   mqAjaxASCII('/' + dirname + '/INDEX', function (data) {
     targets=data.split('\n');
     loadRecursively();
-  },true);
+  },false);
 }
 

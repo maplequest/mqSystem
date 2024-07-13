@@ -1,0 +1,10 @@
+# 1. enable usb debugging on device
+# 2. run this script
+# 3. access http://localhost:8000 on device
+# 4. open chrome://inspect#devices on PC
+# 5. click inspect on open page
+
+echo "chrome://inspect#devices to inspect/debug"
+
+/mnt/c/platform-tools/adb.exe reverse tcp:8000 tcp:8000
+

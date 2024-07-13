@@ -65,3 +65,41 @@ function mqLoadJS (accept,onsuccess) {
   }, accept||"*.js");
 }
 
+
+function mqSaveAsCSV (fname,csvdata,sep) {
+  var separator = sep||",";
+  let csvContent = "data:text/csv;charset=utf-8,"
+    + csvdata.map(e => e.join(separator)).join("\n");
+  var encodedUri = encodeURI(csvContent);
+  var link = mqMakeWidget({
+    tag: 'a',
+    id: "mq-file-save-as-csv-link",
+    href: encodedUri,
+    download: fname
+  });
+  document.body.appendChild(link);
+  link.click();
+  mqDelete('mq-file-save-as-csv-link');
+}
+
+function mqSaveFile(data, filename, mimetype='application/octet-stream') {
+  if (window.navigator.msSaveOrOpenBlob) {
+    return window.navigator.msSaveOrOpenBlob(data, filename);
+  } else {
+    var a = document.createElement('a');
+    a.style.display='none';
+    var url = window.URL.createObjectURL(new Blob([data],{
+          //'type': 'text/plain'
+          'type': mimetype
+    }));
+    document.body.appendChild(a);
+    a.href = url;
+    a.download = filename;
+    a.click();
+    return setTimeout(function() {
+      window.URL.revokeObjectURL(url);
+      return document.body.removeChild(a);
+    }, 0);
+  };
+}
+

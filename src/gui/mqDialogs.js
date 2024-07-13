@@ -15,10 +15,12 @@ function mqDialogOK(cfg) {
   mqSet(id+'-label','white-space','normal');
   mqAppend(wnd,mqButton({
     x: '72px', y: '112px', id: id+'-ok', label: 'OK',
-    onclick: function () { mqDelete(id+'-window'); }
+    onclick: function () { 
+      if (cfg.onclick) cfg.onclick();
+      mqDelete(id+'-window'); 
+    }
   }));
 }
-
 
 function mqDialogOKCancel(cfg) {
   var idx=mqDialogOKCancel.count||0;

@@ -89,5 +89,20 @@ function mqNaN(x) {
   return (x==null||isNaN(x)?true:false);
 }
 
+function mqSort(lst) {
+  return lst.sort(
+    function(a, b) {
+      if (a.toLowerCase() < b.toLowerCase()) return -1;
+      if (a.toLowerCase() > b.toLowerCase()) return 1;
+      return 0;
+   });
+}
 
+function mqHasTouch() {
+  if (mqHasTouch.check==null)
+    mqHasTouch.check = (('ontouchstart' in window) ||
+       (navigator.maxTouchPoints > 0) ||
+       (navigator.msMaxTouchPoints > 0))?true:false;
+  return mqHasTouch.check;
+}
 

@@ -14,3 +14,10 @@ function mqCSS(id,str) {
   if (!exists) document.head.appendChild(obj);
 }
 
+function mqCSSLink(uri) {
+  var link = document.createElement('link');
+  link.setAttribute('rel', 'stylesheet');
+  link.setAttribute('href', uri);
+  document.head.appendChild(link);
+}
+

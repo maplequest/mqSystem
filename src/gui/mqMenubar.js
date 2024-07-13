@@ -8,6 +8,9 @@ class mqMenubar {
     this.cfg['border-bottom']=cfg['border-bottom']||"1px solid " + mqPal(0.5).hex(),
     this.cfg['user-select']='none';
     this.cfg['mq-entries']=cfg['mq-entries']||[];
+    this.cfg['class']='mq-menubar-hidescrollbar';
+    this.cfg['white-space']='nowrap';
+    this.cfg['overflow-x']='auto';
     this.widget = mqMakeWidget(this.cfg);
     var menu = this.cfg['mq-entries'];
     for (var i=0;i<menu.length;i++) {
@@ -17,6 +20,7 @@ class mqMenubar {
     }
     mqCSS('mq-menubar-style', '.mq-menubar-hover:hover { border: 1px solid ' + 
                                   mqPal(0.5).hex() + ' !important; }');
+    mqCSS('mq-menubar-hidescrollbar',` .mq-menubar-hidescroll::-webkit-scrollbar { display: none !important; } .mq-menubar-hidescrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; } `);
   }
   idFromLabel(lbl) {
     var res = lbl;
@@ -51,9 +55,11 @@ class mqMenubar {
         "left": (x-0) + 'px',
         "z-index": "100",
         "min-width": "150px",
-        "max-height": "400px",
+        //"max-height": "400px",
+        "max-height": "350px",
         "overflow-x": "hidden",
         "overflow-y": "auto",
+        "white-space": "nowrap",
         "background": mqPal(0.1).hex(),
         "class": "mq-dropdown",
         "box-shadow": "0px 2px 4px 0px " + mqPal(1.0).hex()
@@ -78,6 +84,9 @@ class mqMenubar {
         mqAppend(content,o);
       }
       mqAppend('mq-root',content);
+      var w = mqWidth(content);
+      var w0 = window.innerWidth;
+      if (x+w>w0) mqSet(content,'left',(w0-w)+'px');
     }
   }
   menuEntry(idx) {
