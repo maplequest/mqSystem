@@ -38,6 +38,11 @@ fi
 
 title=`cat TITLE`
 
+description=""
+if [ -f 'DESCRIPTION' ]; then
+  description=`cat DESCRIPTION`
+fi
+
 # handle icon
 icon=""
 if [ -f "icon.svg" ]; then
@@ -64,7 +69,7 @@ fi
 # transfer system and application files
 cp $sys/dist/mqSystem.min.js $tgt
 cp icon-*x*.png $tgt
-files=`find . '!' -wholename "*/internal/*" '!' -name '.git*' '!' -wholename '*/.git/*' '!' -name '*.js' '!' -name 'TITLE' '!' -name 'VERSION' '!' -name 'CONFIG' '!' -name "icon.*" -print`
+files=`find . '!' -wholename "*/internal/*" '!' -name '.git*' '!' -wholename '*/.git/*' '!' -name '*.js' '!' -name 'TITLE' '!' -name 'VERSION' '!' -name 'CONFIG' '!' -name 'DESCRIPTION' '!' -name "icon.*" -print`
 for extra in $notouch; do
 #  echo "ADDING $extra"
   files="$files $extra"
@@ -113,10 +118,12 @@ fi
 
 # build index
 cat > $root/index.html  << _EOF
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <title>$title</title>
 <meta charset="utf-8">
+<meta name="description" content="$description">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta content='yes' name='apple-mobile-web-app-capable'/>
 <meta content='yes' name='mobile-web-app-capable'/>

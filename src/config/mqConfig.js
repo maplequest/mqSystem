@@ -73,13 +73,15 @@ function mqInit(cfg) {
   mqCSS('mq-init-style',`
 html {
   overscroll-behavior-x: none;
+  height: 100%;
 }
 
 body {
   overscroll-behavior-x: none;
+  height: 100%;
 }
 
-::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: ${col1}; }
 ::-webkit-scrollbar-thumb { background: ${col2}; }
 ::-webkit-scrollbar-thumb:hover { background: ${col3}; }

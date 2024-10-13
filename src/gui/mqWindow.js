@@ -1,4 +1,14 @@
 
+function mqWindowOnTop(id) {
+  var obj0 = mqElement(id);
+  var ztop = 1000; // starting index for all windows
+  mqClassApply('mq-window', function (obj) {
+    if (obj!=obj0) ztop=Math.max(ztop,parseFloat(mqStyle(obj,'z-index')||'0'));
+  });
+  ztop+=1;
+  mqStyle(obj0,'z-index',ztop+'');
+}
+
 function mqWindowDrag(e) {
   var objs = mqElementsOfClass('mq-window');
   for (var i=0;i<objs.length;i++) {
@@ -46,7 +56,9 @@ function mqWindow(wcfg) {
     'background': mqPal(0.05).hex(),
     'border-bottom': '1px solid ' + mqPal(1.0).hex(),
     'user-select': "none",
-    'onmousedown': function (e) { this.parentElement.parentElement.drag=[e.clientX,e.clientY]; },
+    'onmousedown': function (e) { 
+       mqWindowOnTop(this.parentElement.parentElement);
+       this.parentElement.parentElement.drag=[e.clientX,e.clientY]; },
 //    'onpointerdown': function (e) { this.parentElement.parentElement.drag=[e.clientX,e.clientY]; },
     'onmouseup': function (e) { this.parentElement.parentElement.drag=null; }
 //    'onpointerup': function (e) { this.parentElement.parentElement.drag=null; }
@@ -91,6 +103,7 @@ function mqWindow(wcfg) {
   });
   mqAppend('mq-root',obj);
   mqStyle(obj,'filter','drop-shadow(0px 0px 4px '+mqPal(0.5).hex()+')');
+  mqWindowOnTop(obj);
   return bdy;
 }
 

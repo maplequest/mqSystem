@@ -12,15 +12,23 @@ class mqMenubar {
     this.cfg['white-space']='nowrap';
     this.cfg['overflow-x']='auto';
     this.widget = mqMakeWidget(this.cfg);
-    var menu = this.cfg['mq-entries'];
-    for (var i=0;i<menu.length;i++) {
-      var id = menu[i]["id"];
-      var label = menu[i]["label"];
-      mqAppend(this.widget,this.menuEntry(i));
-    }
+    this.refresh();
     mqCSS('mq-menubar-style', '.mq-menubar-hover:hover { border: 1px solid ' + 
                                   mqPal(0.5).hex() + ' !important; }');
     mqCSS('mq-menubar-hidescrollbar',` .mq-menubar-hidescroll::-webkit-scrollbar { display: none !important; } .mq-menubar-hidescrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; } `);
+  }
+  refresh (mode) { 
+    mqClassApply('mq-dropdown',mqDelete);
+    this.mode = mode;
+    this.widget.innerHTML='';
+    var menu = this.cfg['mq-entries'];
+    for (var i=0;i<menu.length;i++) {
+      if (mode==null||menu[i]["visible"]==null||menu[i]["visible"].includes(mode)) {
+        var id = menu[i]["id"];
+        var label = menu[i]["label"];
+        mqAppend(this.widget,this.menuEntry(i));
+      }
+    }
   }
   idFromLabel(lbl) {
     var res = lbl;
@@ -65,23 +73,25 @@ class mqMenubar {
         "box-shadow": "0px 2px 4px 0px " + mqPal(1.0).hex()
       });
       for (var i=0;i<entries.length;i++) {
-        var o = mqMakeWidget({
-          "tag": 'div',
-          "id": id + '-dropdown-' + i,
-          "float": "none",
-          "text-decoration": "none",
-          "text-align": "left",
-          "width": "calc(100% - 7px)",
-          "padding-left": "5px",
-          "class": "mq-menubar-hover",
-          "border": "1px solid transparent",
-          "user-select": "none",
-          "innerHTML": entries[i][0],
-          "background": (entries[i][2]==true?mqPal(0.2).hex():'none'),
-          "cursor": "pointer",
-          "onclick": that.menuEntryHandler(entries[i][0],entries[i][1])
-        });
-        mqAppend(content,o);
+        if (that.mode==null||entries[i].visible==null||entries[i].visible.includes(that.mode)) {
+          var o = mqMakeWidget({
+            "tag": 'div',
+            "id": id + '-dropdown-' + i,
+            "float": "none",
+            "text-decoration": "none",
+            "text-align": "left",
+            "width": "calc(100% - 7px)",
+            "padding-left": "5px",
+            "class": "mq-menubar-hover",
+            "border": "1px solid transparent",
+            "user-select": "none",
+            "innerHTML": entries[i].label,
+            "background": (entries[i].selected==true?mqPal(0.2).hex():'none'),
+            "cursor": "pointer",
+            "onclick": that.menuEntryHandler(entries[i].label,entries[i].hook)
+          });
+          mqAppend(content,o);
+        }
       }
       mqAppend('mq-root',content);
       var w = mqWidth(content);
@@ -121,41 +131,58 @@ class mqMenubar {
     for (var i=0;i<menu.length;i++) {
       if (str==menu[i].id||str==menu[i].label) delid=menu[i].id; else newmenu.push(menu[i]);
     }
-    if (delid) mqDelete(delid);
+    //if (delid) mqDelete(delid);
     this.cfg['mq-entries']=newmenu;
+    this.refresh(this.mode);
   }
-  addMenu(id,label,entries) {
-    this.cfg['mq-entries'].push({id: id, label: label, entries: entries});
-    mqAppend(this.widget,this.menuEntry(this.cfg['mq-entries'].length-1));
+  addMenu(menuentry) {
+    this.cfg['mq-entries'].push(menuentry);
+    this.refresh(this.mode);
   }
-  addMenuBefore(id,label,entries,id0) {
+  addMenuBefore(menuentry,id0) {
     id0 = this.idFromLabel(id0);
-    this.cfg['mq-entries'].push({id: id, label: label, entries: entries});
-    this.widget.insertBefore(
-      this.menuEntry(this.cfg['mq-entries'].length-1),
-      mqElement(id0)
-    );
+    var newentries = []; 
+    var oldentries = this.cfg['mq-entries'];
+    for (var i=0;i<oldentries.length;i++) {
+      if (oldentries[i].id==id0) newentries.push(menuentry);
+      newentries.push(oldentries[i]);
+    }
+    this.cfg['mq-entries']=newentries;
+    this.refresh(this.mode);
   }
-  addMenuAfter(id,label,entries,id0) {
+  addMenuAfter(menuentry,id0) {
     id0 = this.idFromLabel(id0);
-    this.cfg['mq-entries'].push({id: id, label: label, entries: entries});
-    this.widget.insertBefore(
-      this.menuEntry(this.cfg['mq-entries'].length-1),
-      mqElement(id0).nextSibling
-    );
+    var newentries = []; 
+    var oldentries = this.cfg['mq-entries'];
+    for (var i=0;i<oldentries.length;i++) {
+      newentries.push(oldentries[i]);
+      if (oldentries[i].id==id0) newentries.push(menuentry);
+    }
+    this.cfg['mq-entries']=newentries;
+    this.refresh(this.mode);
   }
-  sortSubmenu(str) {
+  sortSubmenu(str,skipfirst) {
     var mid = this.menuIndex(str);
-    this.cfg['mq-entries'][mid]['entries'].sort(function(a,b) {
-      return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
-    });
+    if (!skipfirst) {
+      this.cfg['mq-entries'][mid]['entries'].sort(function(a,b) {
+        return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
+      });
+    } else { 
+      var data = this.cfg['mq-entries'][mid]['entries'];
+      var part1 = data.slice(0,skipfirst);
+      var part2 = data.slice(skipfirst);
+      part2.sort(function(a,b) {
+        return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
+      });
+      this.cfg['mq-entries'][mid]['entries'] = part1.concat(part2);
+    }
   }
   deleteSubmenu(str,subid) {
     var mid = this.menuIndex(str);
     var entries = this.cfg['mq-entries'][mid]['entries'];
     var newentries = [];
     for (var i=0;i<entries.length;i++) {
-      if (subid==entries[i][0]) continue; else newentries.push(entries[i]);
+      if (subid==entries[i].label) continue; else newentries.push(entries[i]);
     }
     this.cfg['mq-entries'][mid]['entries']=newentries; 
   }
@@ -168,17 +195,18 @@ class mqMenubar {
     var entries = this.cfg['mq-entries'][mid]['entries'];
     var match = false;
     for (var i=0;i<entries.length;i++) {
-      if (entries[i][0]==lbl) match=true;
+      if (entries[i].label==lbl) match=true;
     }
-    return true;
+    return match;
   }
   radioSubmenu(str,lbl) {
     var mid = this.menuIndex(str);
     var entries = this.cfg['mq-entries'][mid]['entries'];
     var newentries = [];
     for (var i=0;i<entries.length;i++) {
-      var state=((isNaN(lbl)&&entries[i][0]==lbl)||(!isNaN(lbl)&&i==lbl)?true:false);
-      newentries.push([entries[i][0],entries[i][1],state]);
+      var state=((isNaN(lbl)&&entries[i].label==lbl)||(!isNaN(lbl)&&i==lbl)?true:false);
+      //newentries.push([entries[i].label,entries[i].hook,state]);
+      newentries.push({ label: entries[i].label, hook: entries[i].hook, selected: state });
     }
     this.cfg['mq-entries'][mid]['entries']=newentries;
   }
@@ -188,8 +216,9 @@ class mqMenubar {
     var entries = this.cfg['mq-entries'][mid]['entries'];
     var newentries = [];
     for (var i=0;i<entries.length;i++) {
-      var state=((isNaN(lbl)&&entries[i][0]==lbl)||(!isNaN(lbl)&&i==lbl)?tgt:entries[i][2]||false);
-      newentries.push([entries[i][0],entries[i][1],state]);
+      var state=((isNaN(lbl)&&entries[i].label==lbl)||(!isNaN(lbl)&&i==lbl)?tgt:entries[i].selected||false);
+      //newentries.push([entries[i].label,entries[i].hook,state]);
+      newentries.push({ label: entries[i].label,hook: entries[i].hook, selected: state });
     }
     this.cfg['mq-entries'][mid]['entries']=newentries;
   }
@@ -199,7 +228,8 @@ class mqMenubar {
     var entries = this.cfg['mq-entries'][mid]['entries'];
     var newentries = [];
     for (var i=0;i<entries.length;i++) {
-      newentries.push([entries[i][0],entries[i][1],flt(i)]);
+      //newentries.push([entries[i].label,entries[i].hook,flt(i)]);
+      newentries.push({ label: entries[i].label, hook: entries[i].hook, selected: flt(i) });
     }
     this.cfg['mq-entries'][mid]['entries']=newentries;
   }
@@ -208,9 +238,10 @@ class mqMenubar {
     var entries = this.cfg['mq-entries'][mid]['entries'];
     var newentries = [];
     for (var i=0;i<entries.length;i++) {
-      var oldstate  = entries[i][2]||false;
-      var state=((isNaN(lbl)&&entries[i][0]==lbl)||(!isNaN(lbl)&&i==lbl)?!oldstate:oldstate);
-      newentries.push([entries[i][0],entries[i][1],state]);
+      var oldstate  = entries[i].selected||false;
+      var state=((isNaN(lbl)&&entries[i].label==lbl)||(!isNaN(lbl)&&i==lbl)?!oldstate:oldstate);
+      //newentries.push([entries[i].label,entries[i].hook,state]);
+      newentries.push({ label: entries[i].label, hook: entries[i].hook, selected: state });
     }
     this.cfg['mq-entries'][mid]['entries']=newentries;
   }
@@ -228,7 +259,7 @@ class mqMenubar {
     if (isNaN(idx)) {
       var entries = this.cfg['mq-entries'][mid]['entries'];
       for (var i=0;i<entries.length;i++) {
-        if (this.cfg['mq-entries'][mid]['entries'][i][0]==idx) {
+        if (this.cfg['mq-entries'][mid]['entries'][i].label==idx) {
           res = this.cfg['mq-entries'][mid]['entries'][i];
         }
       }
@@ -242,7 +273,7 @@ class mqMenubar {
     if (isNaN(idx)) {
       var entries = this.cfg['mq-entries'][mid]['entries'];
       for (var i=0;i<entries.length;i++) {
-        if (this.cfg['mq-entries'][mid]['entries'][i][0]==idx) {
+        if (this.cfg['mq-entries'][mid]['entries'][i].label==idx) {
           idx=i;
         }
       }

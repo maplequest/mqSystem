@@ -43,7 +43,9 @@ function mqInput(cfg) {
   var cnt = mqInput.cnt||0;
   mqInput.cnt = cnt+1;
   var id = cfg.id||('mq-input-'+cnt);
-  var cb = cfg.onenter||function (obj) { console.log(obj.innerText); }
+  var cb = cfg.onenter||function (obj) { 
+    //   console.log(obj.innerText);
+  }
   var o1,o2;
   [o1,o2] = mqMakeCenteredWidget({
     tag: 'div',
@@ -64,6 +66,8 @@ function mqInput(cfg) {
     onkeydown: function (e) { if (e.keyCode==13) { cb(this); e.preventDefault(); } }
   });
   mqAttr(o2,'contenteditable','true');
+  mqStyle(o2,'text-wrap','nowrap');
+  mqStyle(o2,'overflow','hidden');
   if (cfg.x!=null||cfg.y!=null)
     mqSet(o1,'position','absolute','top',cfg.y||'0px','left',cfg.x||'0px');
   return o1;

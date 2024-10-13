@@ -7,7 +7,24 @@
 * mqFileExt('image.png');
 */
 function mqFileExt(str) {
-  return str.split('.').pop().toLowerCase();
+  var ext = str.split('.').pop();
+  if (ext==str) ext='';
+  return ext.toLowerCase();
+}
+
+function mqFileChangeExt(fname,newext) {
+  var res = fname;
+  var ext = mqFileExt(fname);
+  if (ext=='') res+=`.${newext}`;
+  else res = res.slice(0,-ext.length)+newext;
+  return res;
+}
+
+function mqFileSane (fname) {
+  var rg1=/^[^\\/:\*\?"<>\|]+$/; // forbidden characters \ / : * ? " < > |
+  var rg2=/^\./; // cannot start with dot (.)
+  var rg3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; // forbidden file names
+  return (fname.length>0)&&rg1.test(fname)&&!rg2.test(fname)&&!rg3.test(fname);
 }
 
 /** Load a file into an ArrayBuffer
