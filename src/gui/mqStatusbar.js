@@ -45,7 +45,7 @@ class mqStatusbar {
         }
  //       mqSet(cfg.id,'width', (n*w) + 'px');
       });
-    mqCSS('mq-statusbar-hidescrollbar',` .mq-statusbar-hidescroll::-webkit-scrollbar { display: none !important; } .mq-statusbar-hidescrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; } `);
+    mqCSS('mq-statusbar-hidescrollbar',` .mq-statusbar-hidescrollbar::-webkit-scrollbar { display: none !important; } .mq-statusbar-hidescrollbar { -ms-overflow-style: -ms-autohiding-scrollbar !important; scrollbar-width: none !important; } `);
   }
   set(idx,str) {
     mqSet(this.cfg.id+'-'+idx,'innerHTML',str);
