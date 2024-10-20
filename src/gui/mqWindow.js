@@ -86,7 +86,9 @@ function mqWindow(wcfg) {
     tag: 'div', 
     id: id,
     overflow: 'hidden',
-    background: mqPal(0.0).hex()
+    background: mqPal(0.0).hex(),
+    border: 'none',
+    margin: '0px'
   });
   var obj = mqMakeRows({
     tag: 'div',
@@ -98,11 +100,11 @@ function mqWindow(wcfg) {
     top: y,
     class: 'mq-window',
     border: '1px solid ' + mqPal(1.0).hex(),
+    "box-shadow": '0px 0px 6px ' + mqPal(0.5).hex(),
     background: mqPal(0.0).hex(),
     children: (wcfg.borderless?[bdy]:[bar,bdy])
   });
   mqAppend('mq-root',obj);
-  mqStyle(obj,'filter','drop-shadow(0px 0px 4px '+mqPal(0.5).hex()+')');
   mqWindowOnTop(obj);
   return bdy;
 }
