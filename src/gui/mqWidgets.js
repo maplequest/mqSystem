@@ -62,7 +62,7 @@ function mqInput(cfg) {
     'padding-left': '5px',
     width: mqShrinkWidth(cfg.width,7),
     height: mqShrinkHeight(cfg.height),
-    innerHTML: (cfg.value||"")+'',
+    innerHTML: (cfg.value==null?"":cfg.value)+'',
     onkeydown: function (e) { if (e.keyCode==13) { cb(this); e.preventDefault(); } }
   });
   mqAttr(o2,'contenteditable','true');
